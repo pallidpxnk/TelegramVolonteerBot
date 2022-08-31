@@ -7,7 +7,7 @@ from inline_buttons import obl
 async def command_start(message: types.Message):
     await bot.send_message(message.from_user.id, 'Вiтаю, ви почали роботу з ботом волонтером, який створенний для '
                                                  'надання допомоги людям. Натиснiть або "Потрiбна допомога" для '
-                                                 'залишення заяви на допомогу', reply_markup=obl)
+                                                 'залишення заяви на допомогу.', reply_markup=obl)
 
 
 async def command_help(message: types.Message):
