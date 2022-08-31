@@ -2,7 +2,7 @@
 
 call %~dp0venv\Scripts\activate
 
-set TOKEN='your token'
+set TOKEN= your token
 
 python main.py
 
