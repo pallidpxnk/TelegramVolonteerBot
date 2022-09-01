@@ -15,5 +15,5 @@ for i in range(len(list_obl)):
 
 category = InlineKeyboardMarkup(row_width=1)
 for i in range(len(list_category)):
-    category_button = InlineKeyboardButton(list_category[i], callback_data=list_obl[i])
+    category_button = InlineKeyboardButton(list_category[i], callback_data=list_category[i])
     category.add(category_button)
