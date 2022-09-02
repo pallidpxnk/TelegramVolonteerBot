@@ -47,7 +47,7 @@ async def input_description(message: types.Message, state: FSMContext):
 async def input_contact(query: types.CallbackQuery, state: FSMContext):
     if query.data == 'yes':
         async with state.proxy() as data:
-            data['contact_state'] = '@pallidpxnk'
+            data['contact_state'] = query.from_user.id
     else:
         async with state.proxy() as data:
             data['contact_state'] = ''
