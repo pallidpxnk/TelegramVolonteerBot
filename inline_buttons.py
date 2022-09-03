@@ -8,6 +8,10 @@ list_obl = ['АР Крим', 'Вінницька', 'Волинська', 'Дні
 
 list_category = ['Робоча сила', 'Перевезення', 'Продукти', 'Одяг', 'Лiки', 'Житло', 'Iнше']
 
+need_help_button = InlineKeyboardMarkup(row_width=1)
+need_help = InlineKeyboardButton('Залишити заяву на допомогу', callback_data='need_help')
+need_help_button.add(need_help)
+
 go_back_button = InlineKeyboardMarkup(row_width=1)
 go_back = InlineKeyboardButton('Повернутись', callback_data='back')
 go_back_button.add(go_back)
@@ -16,6 +20,7 @@ obl = InlineKeyboardMarkup(row_width=1)
 for i in range(len(list_obl)):
     obl_button = InlineKeyboardButton(list_obl[i], callback_data=list_obl[i])
     obl.add(obl_button)
+obl.add(go_back)
 
 category = InlineKeyboardMarkup(row_width=1)
 for i in range(len(list_category)):

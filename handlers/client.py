@@ -3,7 +3,7 @@ from create_bot import bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from inline_buttons import obl, category, agree_buttons, go_back_button, list_obl, list_category
+from inline_buttons import obl, category, agree_buttons, go_back_button, need_help_button, list_obl, list_category
 
 
 class FSMClient(StatesGroup):
@@ -17,12 +17,15 @@ class FSMClient(StatesGroup):
 async def command_start(message: types.Message):
     await bot.send_message(message.from_user.id, 'Вiтаю, ви почали роботу з ботом волонтером, який створенний для '
                                                  'надання допомоги людям. Оберiть область в якiй потрiбна допомога:',
-                           reply_markup=obl)
+                           reply_markup=need_help_button)
 
 
-async def go_back(query: types.CallbackQuery, state: FSMContext):
-    await state.finish()
-    await bot.send_message(query.from_user.id, 'Оберiть область в якiй потрiбна допомога:', reply_markup=obl)
+async def need_help(message: types.Message):
+    await bot.send_message(message.from_user.id, 'Оберiть область в якiй потрiбна допомога:', reply_markup=obl)
+
+
+async def go_back(message: types.Message):
+    await command_start(message)
 
 
 async def current_obl(query: types.CallbackQuery, state: FSMContext):
@@ -73,6 +76,7 @@ async def input_number(message: types.Message, state: FSMContext):
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'])
     dp.register_callback_query_handler(go_back, text='back')
+    dp.register_callback_query_handler(need_help, text='need_help')
     for i in range(len(list_obl)):
         dp.register_callback_query_handler(current_obl, text=list_obl[i], state=None)
     for i in range(len(list_category)):
