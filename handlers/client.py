@@ -3,7 +3,7 @@ from create_bot import bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from inline_buttons import obl, category, agree_buttons, go_back_button, need_help_button, list_obl, list_category
+from inline_buttons import obl, category, agree_buttons, need_help_button, list_obl, list_category
 
 
 class FSMClient(StatesGroup):
