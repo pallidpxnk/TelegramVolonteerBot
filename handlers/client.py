@@ -3,7 +3,7 @@ from create_bot import bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from inline_buttons import obl, category, agree_buttons, list_obl, list_category
+from inline_buttons import obl, category, agree_buttons, go_back_button, list_obl, list_category
 
 
 class FSMClient(StatesGroup):
@@ -16,8 +16,13 @@ class FSMClient(StatesGroup):
 
 async def command_start(message: types.Message):
     await bot.send_message(message.from_user.id, 'Вiтаю, ви почали роботу з ботом волонтером, який створенний для '
-                                                 'надання допомоги людям. Натиснiть або "Потрiбна допомога" для '
-                                                 'залишення заяви на допомогу.', reply_markup=obl)
+                                                 'надання допомоги людям. Оберiть область в якiй потрiбна допомога:',
+                           reply_markup=obl)
+
+
+async def go_back(query: types.CallbackQuery, state: FSMContext):
+    await state.finish()
+    await bot.send_message(query.from_user.id, 'Оберiть область в якiй потрiбна допомога:', reply_markup=obl)
 
 
 async def current_obl(query: types.CallbackQuery, state: FSMContext):
@@ -34,7 +39,8 @@ async def current_category(query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['category_state'] = cur_category
     await FSMClient.next()
-    await bot.send_message(query.from_user.id, 'Опишiть що саме вам потрiбно з цiєї категорiї:')
+    await bot.send_message(query.from_user.id, 'Опишiть що саме вам потрiбно з цiєї категорiї:',
+                           reply_markup=go_back_button)
 
 
 async def input_description(message: types.Message, state: FSMContext):
@@ -52,7 +58,8 @@ async def input_contact(query: types.CallbackQuery, state: FSMContext):
         async with state.proxy() as data:
             data['contact_state'] = ''
     await FSMClient.next()
-    await bot.send_message(query.from_user.id, "Напишiть номер телефону для зв'язку з вами:")
+    await bot.send_message(query.from_user.id, "Напишiть номер телефону для зв'язку з вами:",
+                           reply_markup=go_back_button)
 
 
 async def input_number(message: types.Message, state: FSMContext):
@@ -65,6 +72,7 @@ async def input_number(message: types.Message, state: FSMContext):
 
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'])
+    dp.register_callback_query_handler(go_back, text='back')
     for i in range(len(list_obl)):
         dp.register_callback_query_handler(current_obl, text=list_obl[i], state=None)
     for i in range(len(list_category)):
