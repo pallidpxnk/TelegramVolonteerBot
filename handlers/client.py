@@ -2,7 +2,7 @@ from aiogram import types, Dispatcher
 from create_bot import bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-
+from data_base import sqlite_db
 from inline_buttons import obl, category, agree_buttons, need_help_button, list_obl, list_category
 
 
@@ -97,8 +97,7 @@ async def enter_number(query: types.CallbackQuery, state: FSMContext):
         else:
             async with state.proxy() as data:
                 data['number_state'] = ''
-            async with state.proxy() as data:
-                await bot.send_message(query.from_user.id, str(data))
+            await sqlite_db.sql_add_command(state)
             await state.finish()
 
 
@@ -106,7 +105,10 @@ async def input_number(message: types.Message, state: FSMContext):
     if message.text.isnumeric():
         async with state.proxy() as data:
             data['number_state'] = message.text
+        async with state.proxy() as data:
             await bot.send_message(message.from_user.id, str(data))
+        await sqlite_db.sql_read(message)
+        await sqlite_db.sql_add_command(state)
         await state.finish()
     else:
         await bot.send_message(message.from_user.id, 'Номер введено неккоректно. Ввести номер ще раз?.',
