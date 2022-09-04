@@ -13,7 +13,6 @@ class FSMClient(StatesGroup):
     region_state = State()
     category_state = State()
     description_state = State()
-    contact_state = State()
     number_state = State()
 
 
@@ -62,26 +61,7 @@ async def input_description(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['description_state'] = message.text
     await FSMClient.next()
-    await bot.send_message(message.from_user.id, "Залишити контакт?", reply_markup=agree_buttons)
-
-
-async def input_contact(query: types.CallbackQuery, state: FSMContext):
-    if query.data == 'back':
-        await FSMClient.start_state.set()
-        await bot.send_message(query.from_user.id, 'Вiтаю, ви почали роботу з ботом волонтером, який створенний для '
-                                                   'надання допомоги людям. Оберiть область в якiй потрiбна допомога:',
-                               reply_markup=need_help_button)
-        await FSMClient.next()
-    else:
-        if query.data == 'yes':
-            async with state.proxy() as data:
-                data['contact_state'] = query.from_user.id
-        else:
-            async with state.proxy() as data:
-                data['contact_state'] = ''
-        await FSMClient.next()
-        await bot.send_message(query.from_user.id, "Залишити номер телефону?",
-                               reply_markup=agree_buttons)
+    await bot.send_message(message.from_user.id, "Залишити номер телефону?", reply_markup=agree_buttons)
 
 
 async def enter_number(query: types.CallbackQuery, state: FSMContext):
@@ -99,6 +79,7 @@ async def enter_number(query: types.CallbackQuery, state: FSMContext):
                 data['number_state'] = ''
             await sqlite_db.sql_add_command(state)
             await state.finish()
+            await sqlite_db.sql_read(query)
 
 
 async def input_number(message: types.Message, state: FSMContext):
@@ -107,9 +88,9 @@ async def input_number(message: types.Message, state: FSMContext):
             data['number_state'] = message.text
         async with state.proxy() as data:
             await bot.send_message(message.from_user.id, str(data))
-        await sqlite_db.sql_read(message)
         await sqlite_db.sql_add_command(state)
         await state.finish()
+        await sqlite_db.sql_read(message)
     else:
         await bot.send_message(message.from_user.id, 'Номер введено неккоректно. Ввести номер ще раз?.',
                                reply_markup=agree_buttons)
@@ -129,9 +110,6 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_callback_query_handler(current_category, text='back', state=FSMClient.category_state)
 
     dp.register_message_handler(input_description, state=FSMClient.description_state)
-    dp.register_callback_query_handler(input_contact, text='yes', state=FSMClient.contact_state)
-    dp.register_callback_query_handler(input_contact, text='no', state=FSMClient.contact_state)
-    dp.register_callback_query_handler(input_contact, text='back', state=FSMClient.contact_state)
 
     dp.register_callback_query_handler(enter_number, text='yes', state=FSMClient.number_state)
     dp.register_callback_query_handler(enter_number, text='no', state=FSMClient.number_state)
