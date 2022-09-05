@@ -3,17 +3,21 @@ from create_bot import bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from data_base import sqlite_db
-from inline_buttons import obl, category, agree_buttons, need_help_button, list_obl, list_category
+from inline_buttons import obl, category, agree_buttons, need_help_button, your_statement_button, list_obl, \
+    list_category
 
 
 class FSMClient(StatesGroup):
-    go_back = State()
     start_state = State()
     need_help = State()
     region_state = State()
     category_state = State()
     description_state = State()
     number_state = State()
+    your_statement_state = State()
+
+
+chat_id = '-1001729485030'
 
 
 async def command_start(message: types.Message):
@@ -77,24 +81,44 @@ async def enter_number(query: types.CallbackQuery, state: FSMContext):
         else:
             async with state.proxy() as data:
                 data['number_state'] = ''
+            await sqlite_db.sql_delete()
             await sqlite_db.sql_add_command(state)
-            await state.finish()
+            await bot.send_message(query.from_user.id, 'Ваша заява:')
             await sqlite_db.sql_read(query)
+            await bot.send_message(query.from_user.id, 'Все вiрно?', reply_markup=your_statement_button)
+            await FSMClient.next()
 
 
 async def input_number(message: types.Message, state: FSMContext):
     if message.text.isnumeric():
         async with state.proxy() as data:
             data['number_state'] = message.text
-        async with state.proxy() as data:
-            await bot.send_message(message.from_user.id, str(data))
+        await sqlite_db.sql_delete()
         await sqlite_db.sql_add_command(state)
-        await state.finish()
+        await bot.send_message(message.from_user.id, 'Ваша заява:')
         await sqlite_db.sql_read(message)
+        await bot.send_message(message.from_user.id, 'Все вiрно?', reply_markup=your_statement_button)
+        await FSMClient.next()
     else:
         await bot.send_message(message.from_user.id, 'Номер введено неккоректно. Ввести номер ще раз?.',
                                reply_markup=agree_buttons)
         await FSMClient.number_state.set()
+
+
+async def edit(query: types.CallbackQuery, state: FSMContext):
+    if query.data == 'yes':
+        await bot.send_message(query.from_user.id, 'Ваша заява залишена, зачекайте поки хтось вiдгукнеться!'
+                                                   '\nДякуємо за використання бота.')
+        await bot.send_message(query.from_user.id, 'Ви також можете допомогти комусь в цьому телеграм каналi:'
+                                                   '\nhttps://t.me/volonteer_bot_need_help')
+        await sqlite_db.sql_commit(chat_id)
+        await state.finish()
+    else:
+        await FSMClient.start_state.set()
+        await bot.send_message(query.from_user.id, 'Вiтаю, ви почали роботу з ботом волонтером, який створенний для '
+                                                   'надання допомоги людям. Оберiть область в якiй потрiбна допомога:',
+                               reply_markup=need_help_button)
+        await FSMClient.next()
 
 
 def register_handlers_client(dp: Dispatcher):
@@ -116,3 +140,4 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_callback_query_handler(enter_number, text='back', state=FSMClient.number_state)
 
     dp.register_message_handler(input_number, state=FSMClient.number_state)
+    dp.register_callback_query_handler(edit, state=FSMClient.your_statement_state)

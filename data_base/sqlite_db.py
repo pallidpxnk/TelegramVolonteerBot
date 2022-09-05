@@ -20,8 +20,14 @@ async def sql_add_command(state):
 
 async def sql_read(message):
     for ret in cur.execute('SELECT * FROM menu').fetchall():
-        await bot.send_message(message.from_user.id, f'Область: {ret[0]}\nКатегорiя: {ret[1]}\nОпис: {ret[2]}\nКонтакт:'
-                                                     f' {ret[3]}\nНомер телефону: {ret[-1]}')
+        await bot.send_message(message.from_user.id, f'Область: {ret[0]}\nКатегорiя: {ret[1]}\nОпис: {ret[2]}'
+                                                     f'\nНомер телефону: {ret[-1]}')
+
+
+async def sql_commit(chat_id):
+    for ret in cur.execute('SELECT * FROM menu').fetchall():
+        await bot.send_message(chat_id, f'Область: {ret[0]}\nКатегорiя: {ret[1]}\nОпис: {ret[2]}'
+                                                     f'\nНомер телефону: {ret[-1]}')
 
 
 async def sql_delete():

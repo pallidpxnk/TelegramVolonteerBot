@@ -32,3 +32,7 @@ agree_buttons = InlineKeyboardMarkup(row_width=2)
 button_yes = InlineKeyboardButton('Так', callback_data='yes')
 button_no = InlineKeyboardButton('Нi', callback_data='no')
 agree_buttons.add(button_yes, button_no, go_back)
+
+your_statement_button = InlineKeyboardMarkup(row_width=1)
+your_statement = InlineKeyboardButton('Редагувати', callback_data='statement')
+your_statement_button.add(your_statement, button_yes)
