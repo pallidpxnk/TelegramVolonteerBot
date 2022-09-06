@@ -90,7 +90,13 @@ async def enter_number(query: types.CallbackQuery, state: FSMContext):
 
 
 async def input_number(message: types.Message, state: FSMContext):
-    if message.text.isnumeric():
+    number_list = list(message.text)
+    count_int_num = 0
+    for i in range(1, len(number_list)):
+        if number_list[i].isnumeric():
+            count_int_num += 1
+    if (number_list[0] == '+' and count_int_num == 12) or (message.text.isnumeric() and (len(number_list) == 10)
+                                                           or len(number_list) == 12):
         async with state.proxy() as data:
             data['number_state'] = message.text
         await sqlite_db.sql_delete()
@@ -99,6 +105,15 @@ async def input_number(message: types.Message, state: FSMContext):
         await sqlite_db.sql_read(message)
         await bot.send_message(message.from_user.id, 'Все вiрно?', reply_markup=your_statement_button)
         await FSMClient.next()
+    # if message.text.isnumeric():
+    #     async with state.proxy() as data:
+    #         data['number_state'] = message.text
+    #     await sqlite_db.sql_delete()
+    #     await sqlite_db.sql_add_command(state)
+    #     await bot.send_message(message.from_user.id, 'Ваша заява:')
+    #     await sqlite_db.sql_read(message)
+    #     await bot.send_message(message.from_user.id, 'Все вiрно?', reply_markup=your_statement_button)
+    #     await FSMClient.next()
     else:
         await bot.send_message(message.from_user.id, 'Номер введено неккоректно. Ввести номер ще раз?.',
                                reply_markup=agree_buttons)
